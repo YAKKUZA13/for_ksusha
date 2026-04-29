@@ -603,7 +603,6 @@ function updateMask(settings) {
   maskCtx.save();
   maskCtx.setTransform(1, 0, 0, 1, 0, 0);
   maskCtx.clearRect(0, 0, state.maskCanvas.width, state.maskCanvas.height);
-  maskCtx.filter = `blur(${settings.maskBlur * scale}px)`;
   maskCtx.fillStyle = "#ffffff";
   maskCtx.textAlign = "center";
   maskCtx.textBaseline = "middle";
@@ -623,19 +622,26 @@ function updateMask(settings) {
     maskCtx.restore();
   });
 
-  maskCtx.filter = "none";
   maskCtx.restore();
-  thresholdMaskCanvas(46);
+  blurAndThresholdMask(Math.round(settings.maskBlur * scale), 46);
 }
 
-function thresholdMaskCanvas(threshold = 46) {
+function blurAndThresholdMask(radius, threshold = 46) {
   const maskCtx = state.maskCtx;
-  const image = maskCtx.getImageData(0, 0, state.maskCanvas.width, state.maskCanvas.height);
+  const width = state.maskCanvas.width;
+  const height = state.maskCanvas.height;
+  const image = maskCtx.getImageData(0, 0, width, height);
   const data = image.data;
+  const alpha = new Uint8ClampedArray(width * height);
 
-  for (let i = 0; i < data.length; i += 4) {
-    const alpha = data[i + 3];
-    const fill = alpha > threshold ? 255 : 0;
+  for (let i = 0, pixel = 0; i < data.length; i += 4, pixel += 1) {
+    alpha[pixel] = data[i + 3];
+  }
+
+  const blurredAlpha = radius > 0 ? boxBlurAlpha(alpha, width, height, radius) : alpha;
+
+  for (let i = 0, pixel = 0; i < data.length; i += 4, pixel += 1) {
+    const fill = blurredAlpha[pixel] > threshold ? 255 : 0;
     data[i] = 99;
     data[i + 1] = 115;
     data[i + 2] = 255;
@@ -643,6 +649,45 @@ function thresholdMaskCanvas(threshold = 46) {
   }
 
   maskCtx.putImageData(image, 0, 0);
+}
+
+function boxBlurAlpha(source, width, height, radius) {
+  const horizontal = new Uint8ClampedArray(source.length);
+  const output = new Uint8ClampedArray(source.length);
+  const diameter = radius * 2 + 1;
+
+  for (let y = 0; y < height; y += 1) {
+    const row = y * width;
+    let sum = 0;
+
+    for (let x = -radius; x <= radius; x += 1) {
+      sum += source[row + clamp(x, 0, width - 1)];
+    }
+
+    for (let x = 0; x < width; x += 1) {
+      horizontal[row + x] = sum / diameter;
+      const removeX = clamp(x - radius, 0, width - 1);
+      const addX = clamp(x + radius + 1, 0, width - 1);
+      sum += source[row + addX] - source[row + removeX];
+    }
+  }
+
+  for (let x = 0; x < width; x += 1) {
+    let sum = 0;
+
+    for (let y = -radius; y <= radius; y += 1) {
+      sum += horizontal[clamp(y, 0, height - 1) * width + x];
+    }
+
+    for (let y = 0; y < height; y += 1) {
+      output[y * width + x] = sum / diameter;
+      const removeY = clamp(y - radius, 0, height - 1);
+      const addY = clamp(y + radius + 1, 0, height - 1);
+      sum += horizontal[addY * width + x] - horizontal[removeY * width + x];
+    }
+  }
+
+  return output;
 }
 
 function slugify(value) {
