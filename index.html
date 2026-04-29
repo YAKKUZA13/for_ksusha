@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Semantic Core Layout Solver</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="stage-panel">
+        <canvas id="stage" width="1600" height="1000" aria-label="Semantic word layout"></canvas>
+        <div class="stage-overlay">
+          <div>
+            <span class="eyebrow">Semantic Core</span>
+            <h1>Физический layout-солвер смысла</h1>
+          </div>
+          <div class="phase" id="phaseLabel">simulation</div>
+        </div>
+      </section>
+
+      <aside class="controls">
+        <div class="control-block">
+          <label for="titleInput">Заголовок статьи</label>
+          <textarea id="titleInput" rows="4">Вспышки звезд расширили зону обитаемости у красных карликов</textarea>
+        </div>
+
+        <div class="button-row">
+          <button id="resetButton" type="button">Reset Simulation</button>
+          <button id="freezeButton" type="button" aria-pressed="false">Freeze Shape</button>
+          <button id="exportSvgButton" type="button">Export SVG</button>
+        </div>
+
+        <div class="slider-grid">
+          <label>
+            Seed
+            <input id="seedInput" type="number" value="231" min="1" max="9999" />
+          </label>
+          <label>
+            Core Gravity
+            <input id="gravityInput" type="range" value="1.15" min="0.2" max="2.2" step="0.05" />
+          </label>
+          <label>
+            Floatiness
+            <input id="floatinessInput" type="range" value="0.45" min="0" max="2" step="0.05" />
+          </label>
+          <label>
+            Collision Strength
+            <input id="collisionInput" type="range" value="0.32" min="0" max="1.8" step="0.05" />
+          </label>
+          <label>
+            Damping
+            <input id="dampingInput" type="range" value="0.94" min="0.82" max="0.985" step="0.005" />
+          </label>
+          <label>
+            Word Padding
+            <input id="paddingInput" type="range" value="0" min="0" max="42" step="1" />
+          </label>
+          <label>
+            Font Scale
+            <input id="fontScaleInput" type="range" value="1.0" min="0.55" max="1.65" step="0.05" />
+          </label>
+          <label>
+            Wobble Amount
+            <input id="wobbleAmountInput" type="range" value="1.0" min="0" max="2.4" step="0.05" />
+          </label>
+          <label>
+            Wobble Speed
+            <input id="wobbleSpeedInput" type="range" value="1.0" min="0.2" max="2.5" step="0.05" />
+          </label>
+          <label>
+            Mask Blur
+            <input id="maskBlurInput" type="range" value="34" min="0" max="90" step="1" />
+          </label>
+          <label>
+            Contour Thickness
+            <input id="contourInput" type="range" value="3" min="1" max="8" step="1" />
+          </label>
+        </div>
+
+        <div class="weights-panel">
+          <div class="panel-title">Weights Table</div>
+          <div id="weightsTable" class="weights-table"></div>
+        </div>
+      </aside>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
